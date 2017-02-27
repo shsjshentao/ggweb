@@ -20,8 +20,8 @@ type Route struct {
 
 func NewRoute() *Route {
 	handlerFuncs := make(map[string]HandlerFunc)
-	route := &Route{HandlerFuncs: handlerFuncs}
-	route.RouteGroup.Route = route
+	route := &Route{HandlerFuncs: handlerFuncs, AutoSlash: true}
+	route.RouteGroup.route = route
 	return route
 }
 
@@ -30,7 +30,7 @@ func (r *Route) AddBefore(hf HandlerFunc) {
 }
 
 func (r *Route) AddGroup(path string) *RouteGroup {
-	return &RouteGroup{path, r.Route}
+	return &RouteGroup{path, r.route}
 }
 
 func (r *Route) AddRoute(path string, hf HandlerFunc) {
@@ -52,6 +52,10 @@ func (r *Route) redirectTo404(c *Context) {
 
 func (r *Route) ServeHTTP(rw http.ResponseWriter, re *http.Request) {
 	context := NewContext(rw, re)
+	for _, v := range r.Before {
+		v(context)
+	}
+
 	v, ok := r.HandlerFuncs[re.URL.Path]
 	if ok != true {
 		r.redirectTo404(context)
@@ -62,23 +66,24 @@ func (r *Route) ServeHTTP(rw http.ResponseWriter, re *http.Request) {
 }
 
 type RouteGroup struct {
-	AbsolutePath string
-	Route        *Route
+	groupPath string
+	route     *Route
 }
 
 func (g *RouteGroup) Handle(path string, hf HandlerFunc) {
-	if g.Route.AutoSlash == false {
-		g.Route.AddRoute(g.AbsolutePath+path, hf)
+	var newPath string
+	if g.route.AutoSlash == false {
+		g.route.AddRoute(g.groupPath+path, hf)
 	} else {
 		if !strings.HasPrefix(path, "/") {
-			g.AbsolutePath = g.AbsolutePath + "/" + path
+			newPath = g.groupPath + "/" + path
+		} else {
+			newPath = g.groupPath + path
 		}
-		if strings.HasSuffix(path, "/") {
-			g.AbsolutePath = g.AbsolutePath + path
-			g.AbsolutePath = g.AbsolutePath[:len(g.AbsolutePath)-2]
-			log.Println(g.AbsolutePath)
+		if strings.HasSuffix(newPath, "/") {
+			newPath = newPath[:len(newPath)-2]
 		}
-		g.Route.AddRoute(g.AbsolutePath, hf)
+		g.route.AddRoute(newPath, hf)
 	}
 
 }
