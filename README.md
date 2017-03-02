@@ -1,10 +1,16 @@
 # ggweb
 简易的web框架
+
 func main() {
-  route := ggweb.NewRoute()
+
+	route := ggweb.NewRoute()
+  
 	route.AddBefore(Exec)
+	
 	g1 := route.AddGroup("/a")
+	
 	g1.Handle("/b", Exec)
+	
 	g1.Handle("c", Exec)
 
 	route.AddRoute("/aa", Exec)
