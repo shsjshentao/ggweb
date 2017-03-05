@@ -1,8 +1,7 @@
 # ggweb
 ##简易的web框架
-
+```GO
 func main() {
-
 	route := ggweb.NewRoute()
 	
 	route.AddBefore(Exec)
@@ -16,7 +15,6 @@ func main() {
 	route.AddRoute("/aa", Exec)
 	
 	http.ListenAndServe(":80", route)
-	
 }
 
 func Exec(c *ggweb.Context) {
