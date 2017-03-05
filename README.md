@@ -1,6 +1,6 @@
 # ggweb
 ##简易的web框架
-···
+
 func main() {
 
 	route := ggweb.NewRoute()
@@ -21,4 +21,4 @@ func main() {
 
 func Exec(c *ggweb.Context) {
 
-}···
+}
